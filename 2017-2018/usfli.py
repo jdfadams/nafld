@@ -10,22 +10,26 @@ no_liver_disease = lambda df: ~(df.hep_b | df.hep_c | df.liver_cancer | df.other
 
 
 def load_data():
+
+    def _load_xpt(basename):
+        return pd.read_sas(basename).set_index('SEQN')
+
     df = pd.DataFrame()
 
-    alcohol = pd.read_sas('ALQ_J.XPT')
+    alcohol = _load_xpt('ALQ_J.XPT')
     df['drinks'] = alcohol['ALQ130']
 
-    demographics = pd.read_sas('DEMO_J.XPT')
+    demographics = _load_xpt('DEMO_J.XPT')
     df['age'] = demographics['RIDAGEYR']
     df['mexican_american'] = demographics['RIDRETH3'].apply(lambda x: 1 if x == 1 else 0)
     df['non_hispanic_black'] = demographics['RIDRETH3'].apply(lambda x: 1 if x == 4 else 0)
     df['sex'] = demographics['RIAGENDR'].apply(lambda x: 'male' if x == 1 else 'female')
 
-    hepatitis = pd.read_sas('HEQ_J.XPT')
+    hepatitis = _load_xpt('HEQ_J.XPT')
     df['hep_b'] = hepatitis['HEQ010'].apply(lambda x: x == 1)
     df['hep_c'] = hepatitis['HEQ030'].apply(lambda x: x == 1)
 
-    medical_conditions = pd.read_sas('MCQ_J.XPT')
+    medical_conditions = _load_xpt('MCQ_J.XPT')
     df['liver_cancer'] = (
         medical_conditions['MCQ230A'].apply(lambda x: x == 22) |
         medical_conditions['MCQ230B'].apply(lambda x: x == 22) |
@@ -40,20 +44,20 @@ def load_data():
         medical_conditions['MCQ510F'].apply(lambda x: x == 6)
     )
 
-    biochemistry = pd.read_sas('BIOPRO_J.XPT')
+    biochemistry = _load_xpt('BIOPRO_J.XPT')
     df['ggt'] = biochemistry['LBXSGTSI']
 
-    body = pd.read_sas('BMX_J.XPT')
+    body = _load_xpt('BMX_J.XPT')
     df['bmi'] = body['BMXBMI']
     df['waist_circumference'] = body['BMXWAIST']
 
-    glucose = pd.read_sas('GLU_J.XPT')
+    glucose = _load_xpt('GLU_J.XPT')
     df['glucose'] = glucose['LBXGLU']
 
-    insulin = pd.read_sas('INS_J.XPT')
+    insulin = _load_xpt('INS_J.XPT')
     df['insulin'] = insulin['LBDINSI']
 
-    triglycerides = pd.read_sas('TRIGLY_J.XPT')
+    triglycerides = _load_xpt('TRIGLY_J.XPT')
     df['triglycerides'] = triglycerides['LBXTR']
 
     return df
