@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import numpy as np
 import pandas as pd
 
@@ -84,12 +86,20 @@ def usfli(threshold=30):
     df['usfli'] = np.exp(df['z']) / (1 + np.exp(df['z'])) * 100
     print('Number of rows with USFLI:', len(df))
 
+    non_alc_non_liver = df[
+        non_alcoholic(df) &
+        ~(df.hep_b | df.hep_c | df.liver_cancer)
+    ]
+    print('Number of non-alcoholic rows without HepB, HepC, and liver cancer:', len(non_alc_non_liver))
+
     nafld_usfli = df[
         (df.usfli >= threshold) &
         non_alcoholic(df) &
         ~(df.hep_b | df.hep_c | df.liver_cancer)
     ]
     print(f'NAFLD (USFLI >= {threshold}):', len(nafld_usfli))
+
+    return nafld_usfli
 
 
 def fli(threshold=60):
@@ -120,6 +130,12 @@ def fli(threshold=60):
     df['fli'] = np.exp(df['z']) / (1 + np.exp(df['z'])) * 100
     print('Number of rows with FLI:', len(df))
 
+    non_alc_non_liver = df[
+        non_alcoholic(df) &
+        ~(df.hep_b | df.hep_c | df.liver_cancer)
+    ]
+    print('Number of non-alcoholic rows without HepB, HepC, and liver cancer:', len(non_alc_non_liver))
+
     nafld_fli = df[
         (df.fli >= threshold) &
         non_alcoholic(df) &
@@ -127,14 +143,24 @@ def fli(threshold=60):
     ]
     print(f'NAFLD (FLI >= {threshold}):', len(nafld_fli))
 
+    return nafld_fli
+
 
 def main():
     print('2015-2016')
     print('-' * 40)
-    usfli()
+    df = usfli()
+    a = list(df.index)
     print('-' * 40)
-    fli()
+    df = fli()
+    b = list(df.index)
 
+    d = {i: [] for i in sorted(set(a + b))}
+    for i in a:
+        d[i] += ['usfli']
+    for i in b:
+        d[i] += ['fli']
+    pprint(d)
 
 if __name__ == '__main__':
     main()
