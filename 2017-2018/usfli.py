@@ -13,8 +13,19 @@ def main():
     glucose = pd.read_sas('GLU_J.XPT')
     insulin = pd.read_sas('INS_J.XPT')
 
-    df = pd.DataFrame()
+    lengths = {
+        'alcohol': len(alcohol),
+        'hepatitis': len(hepatitis),
+        'medical_conditions': len(medical_conditions),
+        'biochemistry': len(biochemistry),
+        'body': len(body),
+        'demographics': len(demographics),
+        'glucose': len(glucose),
+        'insulin': len(insulin),
+    }
+    print('Numbers of rows:', lengths)
 
+    df = pd.DataFrame()
     df['drinks'] = alcohol['ALQ130']
     df['hep_b'] = hepatitis['HEQ010'].apply(lambda x: x == 1)
     df['hep_c'] = hepatitis['HEQ030'].apply(lambda x: x == 1)
@@ -31,7 +42,6 @@ def main():
         medical_conditions['MCQ510E'].apply(lambda x: x == 5) |
         medical_conditions['MCQ510F'].apply(lambda x: x == 6)
     )
-
     df['sex'] = demographics['RIAGENDR'].apply(lambda x: 'male' if x == 1 else 'female')
     df['age'] = demographics['RIDAGEYR']
     df['mexican_american'] = demographics['RIDRETH3'].apply(lambda x: 1 if x == 1 else 0)
@@ -53,7 +63,7 @@ def main():
     )
     df['usfli'] = np.exp(df['z']) / (1 + np.exp(df['z'])) * 100
     nafld_fli = df[
-        (df.usfli > 60) &
+        (df.usfli >= 60) &
         (((df.sex == 'female') & (df.drinks <= 1)) | ((df.sex == 'male') & (df.drinks <= 2))) &
         (~(df.hep_b | df.hep_c | df.liver_cancer | df.other_liver_condition))
     ]
@@ -62,12 +72,9 @@ def main():
         (((df.sex == 'female') & (df.drinks <= 1)) | ((df.sex == 'male') & (df.drinks <= 2))) &
         (~(df.hep_b | df.hep_c | df.liver_cancer | df.other_liver_condition))
     ]
-    print(nafld_fli)
-    nafld_fli.to_csv('data_fli.csv')
-    print(nafld_diagnosed)
-    nafld_diagnosed.to_csv('data_diagnosed.csv')
-    print(f'FLI: {len(nafld_fli)}')
-    print(f'Diagnosed: {len(nafld_diagnosed)}')
+    print('Number of rows with USFLI:', len(df))
+    print('NAFLD (according to USFLI):', len(nafld_fli))
+    print('NAFLD (diagnosed with FLD):', len(nafld_diagnosed))
 
 
 if __name__ == '__main__':
