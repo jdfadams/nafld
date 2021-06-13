@@ -152,6 +152,7 @@ def analyze_2017_2018():
     df['nafld_usfli'] = df.non_alcoholic & df.fld_usfli
 
     df.to_csv('2017-2018.csv')  # dump an "Excel spreadsheet"
+    _df = df
 
     df_had = df[df.had_liver_condition]
     print(f'Number of rows had liver condition: {len(df_had)}')
@@ -252,12 +253,18 @@ def analyze_2017_2018():
 
     print('-' * 40)
     print_overlap('nafld_fli', 'nafld_usfli')
+    print(len(_df[_df.nafld_fli & _df.nafld_usfli]))
     print_overlap('nafld', 'nafld_fli', 'nafld_usfli')
+    print(len(_df[_df.nafld & _df.nafld_fli & _df.nafld_usfli]))
     print_overlap('questionnaire_nafld', 'nafld_fli', 'nafld_usfli')
+    print(len(_df[_df.questionnaire_nafld & _df.nafld_fli & _df.nafld_usfli]))
     print('-' * 40)
     print_overlap('fld_fli', 'fld_usfli')
+    print(len(_df[_df.fld_fli & _df.fld_usfli]))
     print_overlap('fld', 'fld_fli', 'fld_usfli')
+    print(len(_df[_df.fld_only & _df.fld_fli & _df.fld_usfli]))
     print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
+    print(len(_df[_df.questionnaire_fld & _df.fld_fli & _df.fld_usfli]))
     print('-' * 40)
 
     df = df_nafld.copy()
