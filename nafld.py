@@ -115,6 +115,7 @@ def analyze_2017_2018():
     )
     df['had_liver_condition'] = med['MCQ160L'].apply(lambda x: x == 1)
     df['still_have_liver_condition'] = med['MCQ170L'].apply(lambda x: x == 1)
+    df['had_and_still_have_liver_condition'] = df.had_liver_condition & df.still_have_liver_condition
     df['fatty_liver'] = med['MCQ510A'].apply(lambda x: x == 1)
     df['ggt'] = biochem['LBXSGTSI']
     df['bmi'] = body['BMXBMI']
@@ -124,7 +125,9 @@ def analyze_2017_2018():
     df['triglycerides'] = trigly['LBXTR']
 
     df['fli'] = fli(df)
+    df['high_fli'] = df['fli'] > FLI_THRESHOLD
     df['usfli'] = usfli(df)
+    df['high_usfli'] = df['usfli'] > USFLI_THRESHOLD
     df['non_alcoholic'] = non_alcoholic(df)
 
     # For statin analysis:
@@ -137,6 +140,16 @@ def analyze_2017_2018():
     df['TG'] = trigly['LBXTR']
     df['LDL'] = trigly['LBDLDL']
     df['HDL'] = hdl['LBDHDD']
+
+    # Improved:
+    df['fld_only'] = df.fatty_liver & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
+    df['nafld'] = df.non_alcoholic & df.fld_only
+    df['questionnaire_fld'] = df.had_and_still_have_liver_condition & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
+    df['questionnaire_nafld'] = df.non_alcoholic & df.questionnaire_fld
+    df['fld_fli'] = df.high_fli & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
+    df['nafld_fli'] = df.non_alcoholic & df.fld_fli
+    df['fld_usfli'] = df.high_usfli & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
+    df['nafld_usfli'] = df.non_alcoholic & df.fld_usfli
 
     df.to_csv('2017-2018.csv')  # dump an "Excel spreadsheet"
 
@@ -160,30 +173,37 @@ def analyze_2017_2018():
     print(f'Number of rows with USFLI >= {USFLI_THRESHOLD}: {len(df_usfli)}')
 
     # Start changing things...
-
     df_fld_only = df[df.fatty_liver & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): {len(df_fld_only)}')
+    assert df[df.fld_only].equals(df_fld_only)
 
     df_nafld = df[df.fatty_liver & df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]    
     print(f'Number of NAFLD (fatty liver and non-alcoholic): {len(df_nafld)}')
+    assert df[df.nafld].equals(df_nafld)
 
     df = df_had_and_still
     df_questionnaire_fld = df[~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of FLD by questionnaire (had and still have liver condition but don\'t have HepB, HepC, liver cancer, etc.): {len(df_questionnaire_fld)}')
+    assert df[df.questionnaire_fld].equals(df_questionnaire_fld)
     df_questionnaire_nafld = df[df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of NAFLD by questionnaire (had and still have liver condition but don\'t have HepB, HepC, liver cancer, etc., or significant alcoholism): {len(df_questionnaire_nafld)}')
+    assert df[df.questionnaire_nafld].equals(df_questionnaire_nafld)
 
     df = df_fli
     df_fld_fli = df[~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of FLD by (FLI > {FLI_THRESHOLD}): {len(df_fld_fli)}')
+    assert df[df.fld_fli].equals(df_fld_fli)
     df_nafld_fli = df[df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of NAFLD by (FLI > {FLI_THRESHOLD}): {len(df_nafld_fli)}')
+    assert df[df.nafld_fli].equals(df_nafld_fli)
 
     df = df_usfli
     df_fld_usfli = df[~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of FLD by (USFLI > {USFLI_THRESHOLD}): {len(df_fld_usfli)}')
+    assert df[df.fld_usfli].equals(df_fld_usfli)
     df_nafld_usfli = df[df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
     print(f'Number of NAFLD by (USFLI > {USFLI_THRESHOLD}): {len(df_nafld_usfli)}')
+    assert df[df.nafld_usfli].equals(df_nafld_usfli)
 
     a = df_fld_fli.index
     b = df_fld_usfli.index
@@ -194,6 +214,9 @@ def analyze_2017_2018():
         d[i] += ['usfli']
     overlap = [k for k, v in d.items() if len(v) == 2]
     print(f'Number of FLD patients identified by both (USFLI > {USFLI_THRESHOLD}) and (FLI > {FLI_THRESHOLD}): {len(overlap)}')
+    x = set(overlap)
+    y = set(df[df.fld_fli & df.fld_usfli].index)
+    assert x == y
 
     a = df_nafld_fli.index
     b = df_nafld_usfli.index
@@ -204,6 +227,9 @@ def analyze_2017_2018():
         d[i] += ['usfli']
     overlap = [k for k, v in d.items() if len(v) == 2]
     print(f'Number of NAFLD patients identified by both (USFLI > {USFLI_THRESHOLD}) and (FLI > {FLI_THRESHOLD}): {len(overlap)}')
+    x = set(overlap)
+    y = set(df[df.nafld_fli & df.nafld_usfli].index)
+    assert x == y
 
     groups = {
         'fld': df_fld_only,
