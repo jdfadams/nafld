@@ -27,6 +27,7 @@ def load_dfs(dirname, suffix):
         'alc': 'ALQ_{suffix}.XPT',
         'med': 'MCQ_{suffix}.XPT',
         'hep': 'HEQ_{suffix}.XPT',
+        'pre': 'RXQ_RX_{suffix}.XPT',
         # Laboratory data
         'biochem': 'BIOPRO_{suffix}.XPT',
         'glu': 'GLU_{suffix}.XPT',
@@ -34,6 +35,10 @@ def load_dfs(dirname, suffix):
         'trigly': 'TRIGLY_{suffix}.XPT',
         # Examination data
         'body': 'BMX_{suffix}.XPT',
+
+        # For statin analysis:
+        'total': 'TCHOL_{suffix}.XPT',
+        'hdl': 'HDL_{suffix}.XPT',
     }
     d = {k: _load(v) for k, v in d.items()}
     return SimpleNamespace(**d)
@@ -75,11 +80,20 @@ def analyze_2017_2018():
     alc = dfs.alc
     med = dfs.med
     hep = dfs.hep
+    pre = dfs.pre
     biochem = dfs.biochem
     glu = dfs.glu
     ins = dfs.ins
     trigly = dfs.trigly
     body = dfs.body
+
+    total = dfs.total
+    hdl = dfs.hdl
+
+    pre['drugs'] = pre['RXDDRUG'].apply(lambda x: x.decode().lower())
+    pre = pre[pre.drugs.str.endswith('statin')]  # with statins
+    pre = pre.groupby(['SEQN']).transform(lambda x: ','.join(x))  # join rows on SEQN
+    pre = pre[~pre.index.duplicated(keep='first')]  # drop duplicates resulting from group_by
 
     df = pd.DataFrame()
     df['drinks'] = alc['ALQ130']
@@ -112,6 +126,17 @@ def analyze_2017_2018():
     df['fli'] = fli(df)
     df['usfli'] = usfli(df)
     df['non_alcoholic'] = non_alcoholic(df)
+
+    # For statin analysis:
+    df['statins'] = pre['drugs']
+    df['AST'] = biochem['LBXSASSI']
+    df['ALT'] = biochem['LBXSATSI']
+    df['ALP'] = biochem['LBXSAPSI']
+    df['AST_ALT_ratio'] = df['AST'] / df['ALT']
+    df['TC'] = total['LBXTC']
+    df['TG'] = trigly['LBXTR']
+    df['LDL'] = trigly['LBDLDL']
+    df['HDL'] = hdl['LBDHDD']
 
     df.to_csv('2017-2018.csv')  # dump an "Excel spreadsheet"
 
@@ -179,6 +204,43 @@ def analyze_2017_2018():
         d[i] += ['usfli']
     overlap = [k for k, v in d.items() if len(v) == 2]
     print(f'Number of NAFLD patients identified by both (USFLI > {USFLI_THRESHOLD}) and (FLI > {FLI_THRESHOLD}): {len(overlap)}')
+
+    groups = {
+        'fld': df_fld_only,
+        'fld_fli': df_fld_fli,
+        'fld_usfli': df_fld_usfli,
+        'nafld': df_nafld,
+        'nafld_fli': df_nafld_fli,
+        'nafld_usfli': df_nafld_usfli,
+        'questionnaire_fld': df_questionnaire_fld,
+        'questionnaire_nafld': df_questionnaire_nafld,
+    }
+    overlaps = defaultdict(list)
+    for name, df in groups.items():
+        for i in df.index:
+            overlaps[i] += [name]
+
+    def print_overlap(*wanted_names):
+        indices = [i for i, names in overlaps.items() if all(name in names for name in wanted_names)]
+        print(f'Overlap of {wanted_names}: {len(indices)}')
+
+    print('-' * 40)
+    print_overlap('nafld_fli', 'nafld_usfli')
+    print_overlap('nafld', 'nafld_fli', 'nafld_usfli')
+    print_overlap('questionnaire_nafld', 'nafld_fli', 'nafld_usfli')
+    print('-' * 40)
+    print_overlap('fld_fli', 'fld_usfli')
+    print_overlap('fld', 'fld_fli', 'fld_usfli')
+    print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
+    print('-' * 40)
+
+    df = df_nafld.copy()
+    df_statin = df[~df['statins'].isnull()]
+    df_nonstatin = df[df['statins'].isnull()]
+    print(f'Number using statins: {len(df_statin)}')
+    print(f'Number not using statins: {len(df_nonstatin)}')
+    df_statin.to_csv('statin.csv')
+    df_nonstatin.to_csv('nonstatin.csv')
 
 
 def main():
