@@ -1,0 +1,31 @@
+Number of rows of demographic: 9254
+Number of rows had liver condition: 284
+Number of rows still have liver condition: 156
+Number of rows had and still have liver condition: 156
+Number of rows with FLI: 2350
+Number of rows with FLI >= 60: 1042
+Number of rows with USFLI: 2354
+Number of rows with USFLI >= 30: 877
+Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): 106
+Number of NAFLD (fatty liver and non-alcoholic): 37
+Number of FLD by questionnaire (had and still have liver condition but don't have HepB, HepC, liver cancer, etc.): 74
+Number of NAFLD by questionnaire (had and still have liver condition but don't have HepB, HepC, liver cancer, etc., or significant alcoholism): 26
+Number of FLD by (FLI > 60): 991
+Number of NAFLD by (FLI > 60): 319
+Number of FLD by (USFLI > 30): 830
+Number of NAFLD by (USFLI > 30): 279
+Number of FLD patients identified by both (USFLI > 30) and (FLI > 60): 693
+Number of NAFLD patients identified by both (USFLI > 30) and (FLI > 60): 236
+----------------------------------------
+Overlap of ('nafld_fli', 'nafld_usfli'): 236
+Overlap of ('nafld', 'nafld_fli', 'nafld_usfli'): 6
+Overlap of ('questionnaire_nafld', 'nafld_fli', 'nafld_usfli'): 5
+----------------------------------------
+Overlap of ('fld_fli', 'fld_usfli'): 693
+Overlap of ('fld', 'fld_fli', 'fld_usfli'): 26
+Overlap of ('questionnaire_fld', 'fld_fli', 'fld_usfli'): 20
+----------------------------------------
+Number using statins: 10
+Number not using statins: 27
+Number using statins: 73
+Number not using statins: 163
