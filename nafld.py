@@ -142,8 +142,8 @@ def analyze_2017_2018():
     df['HDL'] = hdl['LBDHDD']
 
     # Improved:
-    df['fld_only'] = df.fatty_liver & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
-    df['nafld'] = df.non_alcoholic & df.fld_only
+    df['fld'] = df.fatty_liver & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
+    df['nafld'] = df.non_alcoholic & df.fld
     df['questionnaire_fld'] = df.had_and_still_have_liver_condition & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
     df['questionnaire_nafld'] = df.non_alcoholic & df.questionnaire_fld
     df['fld_fli'] = df.high_fli & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
@@ -173,8 +173,8 @@ def analyze_2017_2018():
     print(f'Number of rows with USFLI >= {USFLI_THRESHOLD}: {len(df_usfli)}')
 
     # Start changing things...
-    df_fld_only = df[df.fld_only]
-    print(f'Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): {len(df_fld_only)}')
+    df_fld = df[df.fld]
+    print(f'Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): {len(df_fld)}')
 
     df_nafld = df[df.nafld]
     print(f'Number of NAFLD (fatty liver and non-alcoholic): {len(df_nafld)}')
@@ -214,7 +214,7 @@ def analyze_2017_2018():
     print_overlap('questionnaire_nafld', 'nafld_fli', 'nafld_usfli')
     print('-' * 40)
     print_overlap('fld_fli', 'fld_usfli')
-    print_overlap('fld_only', 'fld_fli', 'fld_usfli')
+    print_overlap('fld', 'fld_fli', 'fld_usfli')
     print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
     print('-' * 40)
 
