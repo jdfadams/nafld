@@ -152,7 +152,6 @@ def analyze_2017_2018():
     df['nafld_usfli'] = df.non_alcoholic & df.fld_usfli
 
     df.to_csv('2017-2018.csv')  # dump an "Excel spreadsheet"
-    _df = df
 
     df_had = df[df.had_liver_condition]
     print(f'Number of rows had liver condition: {len(df_had)}')
@@ -174,97 +173,49 @@ def analyze_2017_2018():
     print(f'Number of rows with USFLI >= {USFLI_THRESHOLD}: {len(df_usfli)}')
 
     # Start changing things...
-    df_fld_only = df[df.fatty_liver & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_fld_only = df[df.fld_only]
     print(f'Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): {len(df_fld_only)}')
-    assert df[df.fld_only].equals(df_fld_only)
 
-    df_nafld = df[df.fatty_liver & df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]    
+    df_nafld = df[df.nafld]
     print(f'Number of NAFLD (fatty liver and non-alcoholic): {len(df_nafld)}')
-    assert df[df.nafld].equals(df_nafld)
 
-    df = df_had_and_still
-    df_questionnaire_fld = df[~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_questionnaire_fld = df[df.questionnaire_fld]
     print(f'Number of FLD by questionnaire (had and still have liver condition but don\'t have HepB, HepC, liver cancer, etc.): {len(df_questionnaire_fld)}')
-    assert df[df.questionnaire_fld].equals(df_questionnaire_fld)
-    df_questionnaire_nafld = df[df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_questionnaire_nafld = df[df.questionnaire_nafld]
     print(f'Number of NAFLD by questionnaire (had and still have liver condition but don\'t have HepB, HepC, liver cancer, etc., or significant alcoholism): {len(df_questionnaire_nafld)}')
-    assert df[df.questionnaire_nafld].equals(df_questionnaire_nafld)
 
-    df = df_fli
-    df_fld_fli = df[~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_fld_fli = df[df.fld_fli]
     print(f'Number of FLD by (FLI > {FLI_THRESHOLD}): {len(df_fld_fli)}')
-    assert df[df.fld_fli].equals(df_fld_fli)
-    df_nafld_fli = df[df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_nafld_fli = df[df.nafld_fli]
     print(f'Number of NAFLD by (FLI > {FLI_THRESHOLD}): {len(df_nafld_fli)}')
-    assert df[df.nafld_fli].equals(df_nafld_fli)
 
-    df = df_usfli
-    df_fld_usfli = df[~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_fld_usfli = df[df.fld_usfli]
     print(f'Number of FLD by (USFLI > {USFLI_THRESHOLD}): {len(df_fld_usfli)}')
-    assert df[df.fld_usfli].equals(df_fld_usfli)
-    df_nafld_usfli = df[df.non_alcoholic & ~(df.hep_b | df.hep_c | df.other_liver_conditions)]
+    df_nafld_usfli = df[df.nafld_usfli]
     print(f'Number of NAFLD by (USFLI > {USFLI_THRESHOLD}): {len(df_nafld_usfli)}')
-    assert df[df.nafld_usfli].equals(df_nafld_usfli)
 
-    a = df_fld_fli.index
-    b = df_fld_usfli.index
-    d = defaultdict(list)
-    for i in a:
-        d[i] += ['fli']
-    for i in b:
-        d[i] += ['usfli']
-    overlap = [k for k, v in d.items() if len(v) == 2]
+    overlap = df[df.fld_fli & df.fld_usfli]
     print(f'Number of FLD patients identified by both (USFLI > {USFLI_THRESHOLD}) and (FLI > {FLI_THRESHOLD}): {len(overlap)}')
-    x = set(overlap)
-    y = set(df[df.fld_fli & df.fld_usfli].index)
-    assert x == y
 
-    a = df_nafld_fli.index
-    b = df_nafld_usfli.index
-    d = defaultdict(list)
-    for i in a:
-        d[i] += ['fli']
-    for i in b:
-        d[i] += ['usfli']
-    overlap = [k for k, v in d.items() if len(v) == 2]
+    overlap = df[df.nafld_fli & df.nafld_usfli]
     print(f'Number of NAFLD patients identified by both (USFLI > {USFLI_THRESHOLD}) and (FLI > {FLI_THRESHOLD}): {len(overlap)}')
-    x = set(overlap)
-    y = set(df[df.nafld_fli & df.nafld_usfli].index)
-    assert x == y
 
-    groups = {
-        'fld': df_fld_only,
-        'fld_fli': df_fld_fli,
-        'fld_usfli': df_fld_usfli,
-        'nafld': df_nafld,
-        'nafld_fli': df_nafld_fli,
-        'nafld_usfli': df_nafld_usfli,
-        'questionnaire_fld': df_questionnaire_fld,
-        'questionnaire_nafld': df_questionnaire_nafld,
-    }
-    overlaps = defaultdict(list)
-    for name, df in groups.items():
-        for i in df.index:
-            overlaps[i] += [name]
-
-    def print_overlap(*wanted_names):
-        indices = [i for i, names in overlaps.items() if all(name in names for name in wanted_names)]
-        print(f'Overlap of {wanted_names}: {len(indices)}')
+    def print_overlap(*attrs):
+        first, *others = attrs
+        _all = getattr(df, first)
+        for attr in others:
+            _all &= getattr(df, attr)
+        overlap = df[_all]
+        print(f'Overlap of {attrs}: {len(overlap)}')
 
     print('-' * 40)
     print_overlap('nafld_fli', 'nafld_usfli')
-    print(len(_df[_df.nafld_fli & _df.nafld_usfli]))
     print_overlap('nafld', 'nafld_fli', 'nafld_usfli')
-    print(len(_df[_df.nafld & _df.nafld_fli & _df.nafld_usfli]))
     print_overlap('questionnaire_nafld', 'nafld_fli', 'nafld_usfli')
-    print(len(_df[_df.questionnaire_nafld & _df.nafld_fli & _df.nafld_usfli]))
     print('-' * 40)
     print_overlap('fld_fli', 'fld_usfli')
-    print(len(_df[_df.fld_fli & _df.fld_usfli]))
-    print_overlap('fld', 'fld_fli', 'fld_usfli')
-    print(len(_df[_df.fld_only & _df.fld_fli & _df.fld_usfli]))
+    print_overlap('fld_only', 'fld_fli', 'fld_usfli')
     print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
-    print(len(_df[_df.questionnaire_fld & _df.fld_fli & _df.fld_usfli]))
     print('-' * 40)
 
     df = df_nafld.copy()
