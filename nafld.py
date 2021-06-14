@@ -226,6 +226,13 @@ def analyze_2017_2018():
     df_statin.to_csv('statin.csv')
     df_nonstatin.to_csv('nonstatin.csv')
 
+    df_index_statin = df[df.nafld_fli & df.nafld_usfli & df.statins]
+    df_index_nonstatin = df[df.nafld_fli & df.nafld_usfli & ~df.statins]
+    print(f'Number using statins: {len(df_index_statin)}')
+    print(f'Number not using statins: {len(df_index_nonstatin)}')
+    df_index_statin.to_csv('index_statin.csv')
+    df_index_nonstatin.to_csv('index_nonstatin.csv')
+
 
 def main():
     analyze_2017_2018()
