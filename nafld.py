@@ -152,7 +152,7 @@ def analyze_2017_2018():
     df['fld_usfli'] = df.high_usfli & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
     df['nafld_usfli'] = df.non_alcoholic & df.fld_usfli
 
-    df.to_csv('2017-2018.csv')  # dump an "Excel spreadsheet"
+    df.to_csv('csv/2017-2018/all.csv')  # dump an "Excel spreadsheet"
 
     df_had = df[df.had_liver_condition]
     print(f'Number of rows had liver condition: {len(df_had)}')
@@ -223,15 +223,15 @@ def analyze_2017_2018():
     df_nonstatin = df[df.nafld & ~df.statins]
     print(f'Number using statins: {len(df_statin)}')
     print(f'Number not using statins: {len(df_nonstatin)}')
-    df_statin.to_csv('statin.csv')
-    df_nonstatin.to_csv('nonstatin.csv')
+    df_statin.to_csv('csv/2017-2018/statin.csv')
+    df_nonstatin.to_csv('csv/2017-2018/nonstatin.csv')
 
     df_index_statin = df[df.nafld_fli & df.nafld_usfli & df.statins]
     df_index_nonstatin = df[df.nafld_fli & df.nafld_usfli & ~df.statins]
     print(f'Number using statins: {len(df_index_statin)}')
     print(f'Number not using statins: {len(df_index_nonstatin)}')
-    df_index_statin.to_csv('index_statin.csv')
-    df_index_nonstatin.to_csv('index_nonstatin.csv')
+    df_index_statin.to_csv('csv/2017-2018/index_statin.csv')
+    df_index_nonstatin.to_csv('csv/2017-2018/index_nonstatin.csv')
 
 
 def main():
