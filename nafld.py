@@ -131,7 +131,8 @@ def analyze_2017_2018():
     df['non_alcoholic'] = non_alcoholic(df)
 
     # For statin analysis:
-    df['statins'] = pre['drugs']
+    df['prescribed_statins'] = pre['drugs']
+    df['statins'] = ~df.prescribed_statins.isnull()
     df['AST'] = biochem['LBXSASSI']
     df['ALT'] = biochem['LBXSATSI']
     df['ALP'] = biochem['LBXSAPSI']
@@ -218,9 +219,8 @@ def analyze_2017_2018():
     print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
     print('-' * 40)
 
-    df = df_nafld.copy()
-    df_statin = df[~df['statins'].isnull()]
-    df_nonstatin = df[df['statins'].isnull()]
+    df_statin = df[df.nafld & df.statins]
+    df_nonstatin = df[df.nafld & ~df.statins]
     print(f'Number using statins: {len(df_statin)}')
     print(f'Number not using statins: {len(df_nonstatin)}')
     df_statin.to_csv('statin.csv')
