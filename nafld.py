@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from pathlib import Path
 from pprint import pprint
-from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -12,43 +11,10 @@ FLI_THRESHOLD = 60
 USFLI_THRESHOLD = 30
 
 
-def load_dfs(dirname, suffix):
-
-    def _load(fmt):
-        path = DIR_PATH / dirname / fmt.format(suffix=suffix)
-        path = str(path)
-        df = pd.read_sas(path)
-        df = df.set_index('SEQN')
-        return df
-
-    d = {
-        # Demographics data
-        'demo': 'DEMO_{suffix}.XPT',
-        # Questionnaire data
-        'alc': 'ALQ_{suffix}.XPT',
-        'med': 'MCQ_{suffix}.XPT',
-        'hep': 'HEQ_{suffix}.XPT',
-        'pre': 'RXQ_RX_{suffix}.XPT',
-        # Laboratory data
-        'biochem': 'BIOPRO_{suffix}.XPT',
-        'glu': 'GLU_{suffix}.XPT',
-        'ins': 'INS_{suffix}.XPT',
-        'trigly': 'TRIGLY_{suffix}.XPT',
-        # Examination data
-        'body': 'BMX_{suffix}.XPT',
-
-        # For statin analysis:
-        'total': 'TCHOL_{suffix}.XPT',
-        'hdl': 'HDL_{suffix}.XPT',
-
-        # other
-        'diab': 'DIQ_{suffix}.XPT',
-        'bp': 'BPQ_{suffix}.XPT',
-        'income': 'INQ_{suffix}.XPT',
-        'smoke': 'SMQ_{suffix}.XPT',
-    }
-    d = {k: _load(v) for k, v in d.items()}
-    return SimpleNamespace(**d)
+def load(path):
+    df = pd.read_sas(path)
+    df = df.set_index('SEQN')
+    return df
 
 
 def non_alcoholic(df):
@@ -80,27 +46,72 @@ def usfli(df):
     return np.exp(z) / (1 + np.exp(z)) * 100
 
 
+def baseline(df):
+
+    def mean(df, col):
+        return (df[col] * df['weight']).sum() / df['weight'].sum()
+
+    def ratio(df, expr):
+        return df[expr]['weight'].sum() / df['weight'].sum()
+
+    return OrderedDict([
+        ('mean age', mean(df, 'age')),
+        ('% female', ratio(df, df.sex == 'female')),
+        ('% male', ratio(df, df.sex == 'male')),
+        ('% mexican american', ratio(df, df.mexican_american)),
+        ('% other hispanic', ratio(df, df.other_hispanic)),
+        ('% non-hispanic white', ratio(df, df.non_hispanic_white)),
+        ('% non-hispanic black', ratio(df, df.non_hispanic_black)),
+        ('% non-hispanic asian', ratio(df, df.non_hispanic_asian)),
+        ('% other race', ratio(df, df.other_race)),
+        ('mean drinks/day female', mean(df[df.sex == 'female'], 'drinks')),
+        ('mean drinks/day male', mean(df[df.sex == 'male'], 'drinks')),
+        ('mean bmi', mean(df, 'bmi')),
+        ('mean waist circumference', mean(df, 'waist_circumference')),
+        ('mean triglycerides', mean(df, 'triglycerides')),
+        ('mean HDL', mean(df, 'HDL')),
+        ('mean LDL', mean(df, 'LDL')),
+        ('mean TC', mean(df, 'TC')),
+        ('mean AST', mean(df, 'AST')),
+        ('mean ALT', mean(df, 'ALT')),
+        ('mean ALP', mean(df, 'ALP')),
+        ('% diabetes', ratio(df, df.diabetes)),
+        ('% htn', ratio(df, df.htn)),
+        ('% PIR low', ratio(df, df.pir_low)),
+        ('% PIR medium', ratio(df, df.pir_medium)),
+        ('% PIR high', ratio(df, df.pir_high)),
+        ('% smoker', ratio(df, df.smoker)),
+    ])
+
+
 def analyze_2017_2018():
-    dfs = load_dfs('2017-2018', 'J')
-    demo = dfs.demo
-    print(f'Number of rows of demographic: {len(demo)}')
-    alc = dfs.alc
-    med = dfs.med
-    hep = dfs.hep
-    pre = dfs.pre
-    biochem = dfs.biochem
-    glu = dfs.glu
-    ins = dfs.ins
-    trigly = dfs.trigly
-    body = dfs.body
 
-    total = dfs.total
-    hdl = dfs.hdl
+    demo = load('2017-2018/DEMO_J.XPT')
 
-    diab = dfs.diab
-    bp = dfs.bp
-    income = dfs.income
-    smoke = dfs.smoke
+    # Questionnaire data:
+    alc = load('2017-2018/ALQ_J.XPT')
+    med = load('2017-2018/MCQ_J.XPT')
+    hep = load('2017-2018/HEQ_J.XPT')
+    pre = load('2017-2018/RXQ_RX_J.XPT')
+
+    # Laboratory data:
+    biochem = load('2017-2018/BIOPRO_J.XPT')
+    glu = load('2017-2018/GLU_J.XPT')
+    ins = load('2017-2018/INS_J.XPT')
+    trigly = load('2017-2018/TRIGLY_J.XPT')
+
+    # Examination data:
+    body = load('2017-2018/BMX_J.XPT')
+
+    # For statin analysis:
+    total = load('2017-2018/TCHOL_J.XPT')
+    hdl = load('2017-2018/HDL_J.XPT')
+
+    # For other analysis:
+    diab = load('2017-2018/DIQ_J.XPT')
+    bp = load('2017-2018/BPQ_J.XPT')
+    income = load('2017-2018/INQ_J.XPT')
+    smoke = load('2017-2018/SMQ_J.XPT')
 
     pre['drugs'] = pre['RXDDRUG'].apply(lambda x: x.decode().lower())
     pre = pre[pre.drugs.str.endswith('statin')]  # with statins
@@ -116,7 +127,7 @@ def analyze_2017_2018():
     df['pir_high'] = income['INDFMMPC'].apply(lambda x: x == 3)
     df['smoker'] = smoke['SMQ040'].apply(lambda x: x == 1 or x == 2)
 
-    df['drinks'] = alc['ALQ130']
+    df['drinks'] = alc['ALQ130']  # per day
     df['age'] = demo['RIDAGEYR']
 
     df['mexican_american'] = demo['RIDRETH3'].apply(lambda x: x == 1)
@@ -178,9 +189,9 @@ def analyze_2017_2018():
     df['fld_usfli'] = df.high_usfli & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
     df['nafld_usfli'] = df.non_alcoholic & df.fld_usfli
 
-    df.to_csv('2017-2018/all.csv')  # dump an "Excel spreadsheet"
-
     df['weight'] = demo['WTMEC2YR']
+
+    df.to_csv('2017-2018/all.csv')  # dump an "Excel spreadsheet"
 
     df_had = df[df.had_liver_condition]
     print(f'Number of rows had liver condition: {len(df_had)}')
@@ -279,51 +290,6 @@ def analyze_2017_2018():
     print(f'Number not using statins: {len(df_index_nonstatin)}')
     df_index_statin.to_csv('csv/2017-2018/index_statin.csv')
     df_index_nonstatin.to_csv('csv/2017-2018/index_nonstatin.csv')
-
-
-    df['mexican_american'] = demo['RIDRETH3'].apply(lambda x: x == 1)
-    df['other_hispanic'] = demo['RIDRETH3'].apply(lambda x: x == 2)
-    df['non_hispanic_white'] = demo['RIDRETH3'].apply(lambda x: x == 3)
-    df['non_hispanic_black'] = demo['RIDRETH3'].apply(lambda x: x == 4)
-    df['non_hispanic_asian'] = demo['RIDRETH3'].apply(lambda x: x == 6)
-    df['other_race'] = demo['RIDRETH3'].apply(lambda x: x == 7)
-
-    def baseline(df):
-
-        def mean(df, col):
-            return (df[col] * df['weight']).sum() / df['weight'].sum()
-
-        def ratio(df, expr):
-            return df[expr]['weight'].sum() / df['weight'].sum()
-
-        return OrderedDict([
-            ('mean age', mean(df, 'age')),
-            ('% female', ratio(df, df.sex == 'female')),
-            ('% male', ratio(df, df.sex == 'male')),
-            ('% mexican american', ratio(df, df.mexican_american)),
-            ('% other hispanic', ratio(df, df.other_hispanic)),
-            ('% non-hispanic white', ratio(df, df.non_hispanic_white)),
-            ('% non-hispanic black', ratio(df, df.non_hispanic_black)),
-            ('% non-hispanic asian', ratio(df, df.non_hispanic_asian)),
-            ('% other race', ratio(df, df.other_race)),
-            ('mean drinks/day female', mean(df[df.sex == 'female'], 'drinks')),
-            ('mean drinks/day male', mean(df[df.sex == 'male'], 'drinks')),
-            ('mean bmi', mean(df, 'bmi')),
-            ('mean waist circumference', mean(df, 'waist_circumference')),
-            ('mean triglycerides', mean(df, 'triglycerides')),
-            ('mean HDL', mean(df, 'HDL')),
-            ('mean LDL', mean(df, 'LDL')),
-            ('mean TC', mean(df, 'TC')),
-            ('mean AST', mean(df, 'AST')),
-            ('mean ALT', mean(df, 'ALT')),
-            ('mean ALP', mean(df, 'ALP')),
-            ('% diabetes', ratio(df, df.diabetes)),
-            ('% htn', ratio(df, df.htn)),
-            ('% PIR low', ratio(df, df.pir_low)),
-            ('% PIR medium', ratio(df, df.pir_medium)),
-            ('% PIR high', ratio(df, df.pir_high)),
-            ('% smoker', ratio(df, df.smoker)),
-        ])
 
     print('NAFLD')
     pprint(baseline(df_nafld))
