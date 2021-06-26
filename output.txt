@@ -1,31 +1,198 @@
-Number of rows of demographic: 9254
-Number of rows had liver condition: 284
-Number of rows still have liver condition: 156
-Number of rows had and still have liver condition: 156
-Number of rows with FLI: 2350
-Number of rows with FLI >= 60: 1042
-Number of rows with USFLI: 2354
-Number of rows with USFLI >= 30: 877
-Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): 106
+Number of rows had liver condition: 294
+Number of rows still have liver condition: 162
+Number of rows had and still have liver condition: 162
+Number of rows with FLI: 2684
+Number of rows with FLI >= 60: 1081
+Number of rows with USFLI: 2688
+Number of rows with USFLI >= 30: 916
+Number of FLD only (fatty liver but not hepB, hepC, or other liver conditions): 109
 Number of NAFLD (fatty liver and non-alcoholic): 37
-Number of FLD by questionnaire (had and still have liver condition but don't have HepB, HepC, liver cancer, etc.): 74
+Number of FLD by questionnaire (had and still have liver condition but don't have HepB, HepC, liver cancer, etc.): 76
 Number of NAFLD by questionnaire (had and still have liver condition but don't have HepB, HepC, liver cancer, etc., or significant alcoholism): 26
-Number of FLD by (FLI > 60): 991
+Number of FLD by (FLI > 60): 1030
 Number of NAFLD by (FLI > 60): 319
-Number of FLD by (USFLI > 30): 830
+Number of FLD by (USFLI > 30): 869
 Number of NAFLD by (USFLI > 30): 279
-Number of FLD patients identified by both (USFLI > 30) and (FLI > 60): 693
+Number of FLD patients identified by both (USFLI > 30) and (FLI > 60): 721
 Number of NAFLD patients identified by both (USFLI > 30) and (FLI > 60): 236
 ----------------------------------------
 Overlap of ('nafld_fli', 'nafld_usfli'): 236
 Overlap of ('nafld', 'nafld_fli', 'nafld_usfli'): 6
 Overlap of ('questionnaire_nafld', 'nafld_fli', 'nafld_usfli'): 5
 ----------------------------------------
-Overlap of ('fld_fli', 'fld_usfli'): 693
-Overlap of ('fld', 'fld_fli', 'fld_usfli'): 26
+Overlap of ('fld_fli', 'fld_usfli'): 721
+Overlap of ('fld', 'fld_fli', 'fld_usfli'): 27
 Overlap of ('questionnaire_fld', 'fld_fli', 'fld_usfli'): 20
 ----------------------------------------
-Number using statins: 10
-Number not using statins: 27
+Number using statins: 1
+Number not using statins: 5
+df_statin weight sum: 13185.56463704523
+df_nonstatin weight sum: 190144.68000122803
+df_nafld weight sum: 203330.24463827326
+df_nafld_index weight sum: 12993247.522731464
+df_statin_index: length=73, weight sum=3345361.6636516643
+df_nonstatin_index: length=163, weight sum=9647885.8590798
 Number using statins: 73
 Number not using statins: 163
+NAFLD (n = 37)
+OrderedDict([('mean age', 57.79444358639025),
+             ('% female', 32.51991885731121),
+             ('% male', 67.4800811426888),
+             ('% mexican american', 8.935057239173123),
+             ('% other hispanic', 11.871553890967187),
+             ('% non-hispanic white', 69.88902388224649),
+             ('% non-hispanic black', 3.0208855961337977),
+             ('% non-hispanic asian', 2.89839676495416),
+             ('% other race', 3.38508262652525),
+             ('mean drinks/day female', 1.0),
+             ('mean drinks/day male', 1.2662110642130417),
+             ('mean bmi', 34.1095789305055),
+             ('mean waist circumference', 106.27191408943494),
+             ('mean triglycerides', 42.16268113217085),
+             ('mean HDL', 42.789404283035864),
+             ('mean LDL', 31.28062028822883),
+             ('mean TC', 169.93547526497147),
+             ('mean AST', 28.93609165268033),
+             ('mean ALT', 36.00054612370944),
+             ('mean ALP', 80.0671137753937),
+             ('% diabetes', 46.29698700397785),
+             ('% htn', 69.67816369450969),
+             ('% PIR low', 11.210323540706744),
+             ('% PIR medium', 12.571361475703387),
+             ('% PIR high', 72.37086336896155),
+             ('% smoker', 4.52983689358501)])
+statin (n = 1)
+OrderedDict([('mean age', 47.0),
+             ('% female', 0.0),
+             ('% male', 100.0),
+             ('% mexican american', 0.0),
+             ('% other hispanic', 0.0),
+             ('% non-hispanic white', 100.0),
+             ('% non-hispanic black', 0.0),
+             ('% non-hispanic asian', 0.0),
+             ('% other race', 0.0),
+             ('mean drinks/day female', nan),
+             ('mean drinks/day male', 2.0),
+             ('mean bmi', 55.3),
+             ('mean waist circumference', 151.9),
+             ('mean triglycerides', 182.0),
+             ('mean HDL', 42.00000000000001),
+             ('mean LDL', 64.0),
+             ('mean TC', 142.0),
+             ('mean AST', 18.0),
+             ('mean ALT', 25.000000000000004),
+             ('mean ALP', 82.0),
+             ('% diabetes', 100.0),
+             ('% htn', 100.0),
+             ('% PIR low', 0.0),
+             ('% PIR medium', 0.0),
+             ('% PIR high', 100.0),
+             ('% smoker', 0.0)])
+non-statin (n = 5)
+OrderedDict([('mean age', 39.06286476258681),
+             ('% female', 24.35264856897762),
+             ('% male', 75.64735143102239),
+             ('% mexican american', 24.35264856897762),
+             ('% other hispanic', 42.345092877496526),
+             ('% non-hispanic white', 0.0),
+             ('% non-hispanic black', 0.0),
+             ('% non-hispanic asian', 5.790254188706419),
+             ('% other race', 27.512004364819433),
+             ('mean drinks/day female', 1.0),
+             ('mean drinks/day male', 1.559769669082309),
+             ('mean bmi', 39.61222047538979),
+             ('mean waist circumference', 120.90249758184424),
+             ('mean triglycerides', 178.04108423717082),
+             ('mean HDL', 42.20111174179679),
+             ('mean LDL', 147.8728647584323),
+             ('mean TC', 225.8346279506688),
+             ('mean AST', 40.990094910161865),
+             ('mean ALT', 72.81917924073987),
+             ('mean ALP', 81.331741411289),
+             ('% diabetes', 12.318716079846457),
+             ('% htn', 12.318716079846457),
+             ('% PIR low', 27.512004364819433),
+             ('% PIR medium', 0.0),
+             ('% PIR high', 72.48799563518057),
+             ('% smoker', 12.318716079846457)])
+NAFLD index (n = 236)
+OrderedDict([('mean age', 52.34974438542812),
+             ('% female', 33.918275796020005),
+             ('% male', 66.08172420398),
+             ('% mexican american', 8.443927117714288),
+             ('% other hispanic', 3.6123173997708027),
+             ('% non-hispanic white', 74.94599268627603),
+             ('% non-hispanic black', 5.848870550076886),
+             ('% non-hispanic asian', 2.8232871924487384),
+             ('% other race', 4.32560505371323),
+             ('mean drinks/day female', 1.0),
+             ('mean drinks/day male', 1.5176819713354035),
+             ('mean bmi', 35.08682172162154),
+             ('mean waist circumference', 115.9664700687921),
+             ('mean triglycerides', 163.16795125724164),
+             ('mean HDL', 45.55412214261697),
+             ('mean LDL', 111.16027433307842),
+             ('mean TC', 191.5975592405833),
+             ('mean AST', 22.692024979761268),
+             ('mean ALT', 27.967896292145664),
+             ('mean ALP', 80.86325646639791),
+             ('% diabetes', 17.743003055595743),
+             ('% htn', 44.400271147960794),
+             ('% PIR low', 12.461870345696017),
+             ('% PIR medium', 10.292947185261564),
+             ('% PIR high', 70.37355385435004),
+             ('% smoker', 6.214341106341363)])
+statin index (n = 73)
+OrderedDict([('mean age', 66.4258137695039),
+             ('% female', 28.99103675240588),
+             ('% male', 71.00896324759414),
+             ('% mexican american', 5.332859167876144),
+             ('% other hispanic', 1.5484341791570315),
+             ('% non-hispanic white', 82.29212803717101),
+             ('% non-hispanic black', 4.223189080601058),
+             ('% non-hispanic asian', 3.5449064286878205),
+             ('% other race', 3.0584831065069493),
+             ('mean drinks/day female', 1.0),
+             ('mean drinks/day male', 1.7399521222122878),
+             ('mean bmi', 33.950401965704366),
+             ('mean waist circumference', 115.46902063458143),
+             ('mean triglycerides', 168.160263828733),
+             ('mean HDL', 49.81820587277499),
+             ('mean LDL', 81.96847391428379),
+             ('mean TC', 164.52945649035036),
+             ('mean AST', 22.15554952486404),
+             ('mean ALT', 24.102242457361477),
+             ('mean ALP', 80.65492901042485),
+             ('% diabetes', 41.42910662352114),
+             ('% htn', 71.11108502919527),
+             ('% PIR low', 5.384748039114977),
+             ('% PIR medium', 10.708389598373655),
+             ('% PIR high', 81.40110585503886),
+             ('% smoker', 3.3705488916813686)])
+non-statin index (n = 163)
+OrderedDict([('mean age', 47.46892970952985),
+             ('% female', 35.62677409760817),
+             ('% male', 64.37322590239184),
+             ('% mexican american', 9.522676141533747),
+             ('% other hispanic', 4.327959759697498),
+             ('% non-hispanic white', 72.3987528103242),
+             ('% non-hispanic black', 6.412568394840987),
+             ('% non-hispanic asian', 2.5730689203911465),
+             ('% other race', 4.764973973212433),
+             ('mean drinks/day female', 1.0),
+             ('mean drinks/day male', 1.4326661094831143),
+             ('mean bmi', 35.48087023554376),
+             ('mean waist circumference', 116.13895845548332),
+             ('mean triglycerides', 161.43688899825815),
+             ('mean HDL', 44.07557000696473),
+             ('mean LDL', 121.28240175461077),
+             ('mean TC', 200.98330390745173),
+             ('mean AST', 22.878045466168057),
+             ('mean ALT', 29.308294627358606),
+             ('mean ALP', 80.93549308848051),
+             ('% diabetes', 9.529951616678927),
+             ('% htn', 35.13841481296685),
+             ('% PIR low', 14.91583114075754),
+             ('% PIR medium', 10.148894369693464),
+             ('% PIR high', 66.549799070569),
+             ('% smoker', 7.2004134535138045)])

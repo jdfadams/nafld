@@ -291,17 +291,17 @@ def analyze_2017_2018():
     df_index_statin.to_csv('csv/2017-2018/index_statin.csv')
     df_index_nonstatin.to_csv('csv/2017-2018/index_nonstatin.csv')
 
-    print('NAFLD')
+    print(f'NAFLD (n = {len(df_nafld)})')
     pprint(baseline(df_nafld))
-    print('statin')
+    print(f'statin (n = {len(df_statin)})')
     pprint(baseline(df_statin))
-    print('non-statin')
+    print(f'non-statin (n = {len(df_nonstatin)})')
     pprint(baseline(df_nonstatin))
-    print('NAFLD index')
+    print(f'NAFLD index (n = {len(df_nafld_index)})')
     pprint(baseline(df_nafld_index))
-    print('statin index')
+    print(f'statin index (n = {len(df_statin_index)})')
     pprint(baseline(df_statin_index))
-    print('non-statin index')
+    print(f'non-statin index (n = {len(df_nonstatin_index)})')
     pprint(baseline(df_nonstatin_index))
 
 
