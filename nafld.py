@@ -244,7 +244,7 @@ def analyze_2017_2018():
         first, *others = attrs
         _all = getattr(df, first)
         for attr in others:
-            _all &= getattr(df, attr)
+            _all = _all & getattr(df, attr)
         overlap = df[_all]
         print(f'Overlap of {attrs}: {len(overlap)}')
 
