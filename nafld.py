@@ -39,6 +39,12 @@ def load_dfs(dirname, suffix):
         # For statin analysis:
         'total': 'TCHOL_{suffix}.XPT',
         'hdl': 'HDL_{suffix}.XPT',
+
+        # other
+        'diab': 'DIQ_{suffix}.XPT',
+        'bp': 'BPQ_{suffix}.XPT',
+        'income': 'INQ_{suffix}.XPT',
+        'smoke': 'SMQ_{suffix}.XPT',
     }
     d = {k: _load(v) for k, v in d.items()}
     return SimpleNamespace(**d)
@@ -90,16 +96,35 @@ def analyze_2017_2018():
     total = dfs.total
     hdl = dfs.hdl
 
+    diab = dfs.diab
+    bp = dfs.bp
+    income = dfs.income
+    smoke = dfs.smoke
+
     pre['drugs'] = pre['RXDDRUG'].apply(lambda x: x.decode().lower())
     pre = pre[pre.drugs.str.endswith('statin')]  # with statins
     pre = pre.groupby(['SEQN']).transform(lambda x: ','.join(x))  # join rows on SEQN
     pre = pre[~pre.index.duplicated(keep='first')]  # drop duplicates resulting from group_by
 
     df = pd.DataFrame()
+
+    df['diabetes'] = diab['DIQ010'].apply(lambda x: x == 1)
+    df['htn'] = bp['BPQ020'].apply(lambda x: x == 1)
+    df['pir_low'] = income['INDFMMPC'].apply(lambda x: x == 1)  # poverty income ratio
+    df['pir_medium'] = income['INDFMMPC'].apply(lambda x: x == 2)
+    df['pir_high'] = income['INDFMMPC'].apply(lambda x: x == 3)
+    df['smoker'] = smoke['SMQ040'].apply(lambda x: x == 1 or x == 2)
+
     df['drinks'] = alc['ALQ130']
     df['age'] = demo['RIDAGEYR']
+
     df['mexican_american'] = demo['RIDRETH3'].apply(lambda x: x == 1)
+    df['other_hispanic'] = demo['RIDRETH3'].apply(lambda x: x == 2)
+    df['non_hispanic_white'] = demo['RIDRETH3'].apply(lambda x: x == 3)
     df['non_hispanic_black'] = demo['RIDRETH3'].apply(lambda x: x == 4)
+    df['non_hispanic_asian'] = demo['RIDRETH3'].apply(lambda x: x == 6)
+    df['other_race'] = demo['RIDRETH3'].apply(lambda x: x == 7)
+
     df['sex'] = demo['RIAGENDR'].apply(lambda x: 'male' if x == 1 else ('female' if x == 2 else None))
     df['hep_b'] = hep['HEQ010'].apply(lambda x: x == 1)
     df['hep_c'] = hep['HEQ030'].apply(lambda x: x == 1)
@@ -152,7 +177,7 @@ def analyze_2017_2018():
     df['fld_usfli'] = df.high_usfli & ~(df.hep_b | df.hep_c | df.other_liver_conditions)
     df['nafld_usfli'] = df.non_alcoholic & df.fld_usfli
 
-    df.to_csv('csv/2017-2018/all.csv')  # dump an "Excel spreadsheet"
+    df.to_csv('2017-2018/all.csv')  # dump an "Excel spreadsheet"
 
     df_had = df[df.had_liver_condition]
     print(f'Number of rows had liver condition: {len(df_had)}')
@@ -219,6 +244,9 @@ def analyze_2017_2018():
     print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
     print('-' * 40)
 
+
+    df['weight'] = demo['WTMEC2YR']
+
     df_statin = df[df.nafld & df.statins]
     df_nonstatin = df[df.nafld & ~df.statins]
     print(f'Number using statins: {len(df_statin)}')
@@ -226,12 +254,106 @@ def analyze_2017_2018():
     df_statin.to_csv('csv/2017-2018/statin.csv')
     df_nonstatin.to_csv('csv/2017-2018/nonstatin.csv')
 
+    df_statin_weight = df_statin['weight'].sum()
+    df_nonstatin_weight = df_nonstatin['weight'].sum()
+    df_nafld_weight = df[df.nafld]['weight'].sum()
+    print('df_statin weight sum:', df_statin_weight)
+    print('df_nonstatin weight sum:', df_nonstatin_weight)
+    print('df_nafld weight sum:', df_nafld_weight)
+
+    df_nafld_index = df[df.nafld_fli & df.nafld_usfli]
+
+    df_nafld_index_weight = df[df.nafld_fli & df.nafld_usfli]['weight'].sum()
+    print('df_nafld_index weight sum:', df_nafld_index_weight)
+    df_statin_index = df[df.nafld_fli & df.nafld_usfli & df.statins]
+    df_statin_index_weight = df_statin_index['weight'].sum()
+    print(f'df_statin_index: length={len(df_statin_index)}, weight sum={df_statin_index_weight}')
+    df_nonstatin_index = df[df.nafld_fli & df.nafld_usfli & ~df.statins]
+    df_nonstatin_index_weight = df_nonstatin_index['weight'].sum()
+    print(f'df_nonstatin_index: length={len(df_nonstatin_index)}, weight sum={df_nonstatin_index_weight}')
+
+
     df_index_statin = df[df.nafld_fli & df.nafld_usfli & df.statins]
     df_index_nonstatin = df[df.nafld_fli & df.nafld_usfli & ~df.statins]
     print(f'Number using statins: {len(df_index_statin)}')
     print(f'Number not using statins: {len(df_index_nonstatin)}')
     df_index_statin.to_csv('csv/2017-2018/index_statin.csv')
     df_index_nonstatin.to_csv('csv/2017-2018/index_nonstatin.csv')
+
+
+    df['mexican_american'] = demo['RIDRETH3'].apply(lambda x: x == 1)
+    df['other_hispanic'] = demo['RIDRETH3'].apply(lambda x: x == 2)
+    df['non_hispanic_white'] = demo['RIDRETH3'].apply(lambda x: x == 3)
+    df['non_hispanic_black'] = demo['RIDRETH3'].apply(lambda x: x == 4)
+    df['non_hispanic_asian'] = demo['RIDRETH3'].apply(lambda x: x == 6)
+    df['other_race'] = demo['RIDRETH3'].apply(lambda x: x == 7)
+
+    from collections import OrderedDict
+
+    def baseline(df):
+        return {
+            'mean age': df['age'].mean(),
+            '% female': len(df[df.sex == 'female']) / len(df),
+            '% male': len(df[df.sex == 'male']) / len(df),
+            '% mexican american': len(df[df.mexican_american]) / len(df),
+            '% other hispanic': len(df[df.other_hispanic]) / len(df),
+            '% non-hispanic white': len(df[df.non_hispanic_white]) / len(df),
+            '% non-hispanic black': len(df[df.non_hispanic_black]) / len(df),
+            '% non-hispanic asian': len(df[df.non_hispanic_asian]) / len(df),
+            '% other race': len(df[df.other_race]) / len(df),
+            'mean drinks/day female': df[df.sex == 'female']['drinks'].mean(),
+            'mean drinks/day male': df[df.sex == 'male']['drinks'].mean(),
+            'mean bmi': df['bmi'].mean(),
+            'mean waist circumference': df['waist_circumference'].mean(),
+            'mean triglycerides': df['triglycerides'].mean(),
+            'mean HDL': df['HDL'].mean(),
+            'mean LDL': df['LDL'].mean(),
+            'mean TC': df['TC'].mean(),
+            'mean AST': df['AST'].mean(),
+            'mean ALT': df['ALT'].mean(),
+            'mean ALP': df['ALP'].mean(),
+            '% diabetes': len(df[df.diabetes]) / len(df),
+            '% htn': len(df[df.htn]) / len(df),
+            '% PIR low': len(df[df.pir_low]) / len(df),
+            '% PIR medium': len(df[df.pir_medium]) / len(df),
+            '% PIR high': len(df[df.pir_high]) / len(df),
+            '% smoker': len(df[df.smoker]) / len(df),
+        }
+
+    total = baseline(df_nafld)
+    from pprint import pprint
+    print('NAFLD')
+    pprint(baseline(df_nafld))
+    print('statin')
+    pprint(baseline(df_statin))
+    print('non-statin')
+    pprint(baseline(df_nonstatin))
+    print('NAFLD index')
+    pprint(baseline(df_nafld_index))
+    print('statin index')
+    pprint(baseline(df_statin_index))
+    print('non-statin index')
+    pprint(baseline(df_nonstatin_index))
+
+
+
+    # print(df_statin['AST_ALT_ratio'].values)
+    # print(df_index_statin['AST_ALT_ratio'].values)
+
+
+    # from scipy.stats import ttest_ind
+
+    # def run_t_test(df_a, df_b, col, **kwargs):
+    #     a = df_a[col].dropna()
+    #     b = df_b[col].dropna()
+    #     t, p = ttest_ind(a, b, **kwargs)
+    #     print(col)
+    #     print('t =', t)
+    #     print('p =', p)
+
+    # run_t_test(df_statin, df_nonstatin, 'AST_ALT_ratio', equal_var=False)
+    # run_t_test(df_statin, df_nonstatin, 'TC', equal_var=False)
+    # run_t_test(df_statin, df_nonstatin, 'TG', equal_var=False)
 
 
 def main():
