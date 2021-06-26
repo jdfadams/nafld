@@ -1,5 +1,6 @@
-from collections import defaultdict
+from collections import OrderedDict
 from pathlib import Path
+from pprint import pprint
 from types import SimpleNamespace
 
 import numpy as np
@@ -287,41 +288,43 @@ def analyze_2017_2018():
     df['non_hispanic_asian'] = demo['RIDRETH3'].apply(lambda x: x == 6)
     df['other_race'] = demo['RIDRETH3'].apply(lambda x: x == 7)
 
-    from collections import OrderedDict
-
     def baseline(df):
+
+        def mean(df, col):
+            return (df[col] * df['weight']).sum() / df['weight'].sum()
+
+        def ratio(df, expr):
+            return df[expr]['weight'].sum() / df['weight'].sum()
+
         return OrderedDict([
-            ('mean age', df['age'].mean()),
-            ('mean age', (df['age'] * df['weight']).sum() / df['weight'].sum()),
-            ('% female', len(df[df.sex == 'female']) / len(df)),
-            ('% male', len(df[df.sex == 'male']) / len(df)),
-            ('% mexican american', len(df[df.mexican_american]) / len(df)),
-            ('% other hispanic', len(df[df.other_hispanic]) / len(df)),
-            ('% non-hispanic white', len(df[df.non_hispanic_white]) / len(df)),
-            ('% non-hispanic black', len(df[df.non_hispanic_black]) / len(df)),
-            ('% non-hispanic asian', len(df[df.non_hispanic_asian]) / len(df)),
-            ('% other race', len(df[df.other_race]) / len(df)),
-            ('mean drinks/day female', df[df.sex == 'female']['drinks'].mean()),
-            ('mean drinks/day male', df[df.sex == 'male']['drinks'].mean()),
-            ('mean bmi', df['bmi'].mean()),
-            ('mean waist circumference', df['waist_circumference'].mean()),
-            ('mean triglycerides', df['triglycerides'].mean()),
-            ('mean HDL', df['HDL'].mean()),
-            ('mean LDL', df['LDL'].mean()),
-            ('mean TC', df['TC'].mean()),
-            ('mean AST', df['AST'].mean()),
-            ('mean ALT', df['ALT'].mean()),
-            ('mean ALP', df['ALP'].mean()),
-            ('% diabetes', len(df[df.diabetes]) / len(df)),
-            ('% htn', len(df[df.htn]) / len(df)),
-            ('% PIR low', len(df[df.pir_low]) / len(df)),
-            ('% PIR medium', len(df[df.pir_medium]) / len(df)),
-            ('% PIR high', len(df[df.pir_high]) / len(df)),
-            ('% smoker', len(df[df.smoker]) / len(df)),
+            ('mean age', mean(df, 'age')),
+            ('% female', ratio(df, df.sex == 'female')),
+            ('% male', ratio(df, df.sex == 'male')),
+            ('% mexican american', ratio(df, df.mexican_american)),
+            ('% other hispanic', ratio(df, df.other_hispanic)),
+            ('% non-hispanic white', ratio(df, df.non_hispanic_white)),
+            ('% non-hispanic black', ratio(df, df.non_hispanic_black)),
+            ('% non-hispanic asian', ratio(df, df.non_hispanic_asian)),
+            ('% other race', ratio(df, df.other_race)),
+            ('mean drinks/day female', mean(df[df.sex == 'female'], 'drinks')),
+            ('mean drinks/day male', mean(df[df.sex == 'male'], 'drinks')),
+            ('mean bmi', mean(df, 'bmi')),
+            ('mean waist circumference', mean(df, 'waist_circumference')),
+            ('mean triglycerides', mean(df, 'triglycerides')),
+            ('mean HDL', mean(df, 'HDL')),
+            ('mean LDL', mean(df, 'LDL')),
+            ('mean TC', mean(df, 'TC')),
+            ('mean AST', mean(df, 'AST')),
+            ('mean ALT', mean(df, 'ALT')),
+            ('mean ALP', mean(df, 'ALP')),
+            ('% diabetes', ratio(df, df.diabetes)),
+            ('% htn', ratio(df, df.htn)),
+            ('% PIR low', ratio(df, df.pir_low)),
+            ('% PIR medium', ratio(df, df.pir_medium)),
+            ('% PIR high', ratio(df, df.pir_high)),
+            ('% smoker', ratio(df, df.smoker)),
         ])
 
-    total = baseline(df_nafld)
-    from pprint import pprint
     print('NAFLD')
     pprint(baseline(df_nafld))
     print('statin')
