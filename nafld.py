@@ -179,6 +179,8 @@ def analyze_2017_2018():
 
     df.to_csv('2017-2018/all.csv')  # dump an "Excel spreadsheet"
 
+    df['weight'] = demo['WTMEC2YR']
+
     df_had = df[df.had_liver_condition]
     print(f'Number of rows had liver condition: {len(df_had)}')
 
@@ -243,9 +245,6 @@ def analyze_2017_2018():
     print_overlap('fld', 'fld_fli', 'fld_usfli')
     print_overlap('questionnaire_fld', 'fld_fli', 'fld_usfli')
     print('-' * 40)
-
-
-    df['weight'] = demo['WTMEC2YR']
 
     df_statin = df[df.nafld & df.statins]
     df_nonstatin = df[df.nafld & ~df.statins]
