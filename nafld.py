@@ -51,19 +51,19 @@ def baseline(df):
     def mean(df, col):
         return (df[col] * df['weight']).sum() / df['weight'].sum()
 
-    def ratio(df, expr):
-        return df[expr]['weight'].sum() / df['weight'].sum()
+    def percent(df, expr):
+        return df[expr]['weight'].sum() / df['weight'].sum() * 100
 
     return OrderedDict([
         ('mean age', mean(df, 'age')),
-        ('% female', ratio(df, df.sex == 'female')),
-        ('% male', ratio(df, df.sex == 'male')),
-        ('% mexican american', ratio(df, df.mexican_american)),
-        ('% other hispanic', ratio(df, df.other_hispanic)),
-        ('% non-hispanic white', ratio(df, df.non_hispanic_white)),
-        ('% non-hispanic black', ratio(df, df.non_hispanic_black)),
-        ('% non-hispanic asian', ratio(df, df.non_hispanic_asian)),
-        ('% other race', ratio(df, df.other_race)),
+        ('% female', percent(df, df.sex == 'female')),
+        ('% male', percent(df, df.sex == 'male')),
+        ('% mexican american', percent(df, df.mexican_american)),
+        ('% other hispanic', percent(df, df.other_hispanic)),
+        ('% non-hispanic white', percent(df, df.non_hispanic_white)),
+        ('% non-hispanic black', percent(df, df.non_hispanic_black)),
+        ('% non-hispanic asian', percent(df, df.non_hispanic_asian)),
+        ('% other race', percent(df, df.other_race)),
         ('mean drinks/day female', mean(df[df.sex == 'female'], 'drinks')),
         ('mean drinks/day male', mean(df[df.sex == 'male'], 'drinks')),
         ('mean bmi', mean(df, 'bmi')),
@@ -75,12 +75,12 @@ def baseline(df):
         ('mean AST', mean(df, 'AST')),
         ('mean ALT', mean(df, 'ALT')),
         ('mean ALP', mean(df, 'ALP')),
-        ('% diabetes', ratio(df, df.diabetes)),
-        ('% htn', ratio(df, df.htn)),
-        ('% PIR low', ratio(df, df.pir_low)),
-        ('% PIR medium', ratio(df, df.pir_medium)),
-        ('% PIR high', ratio(df, df.pir_high)),
-        ('% smoker', ratio(df, df.smoker)),
+        ('% diabetes', percent(df, df.diabetes)),
+        ('% htn', percent(df, df.htn)),
+        ('% PIR low', percent(df, df.pir_low)),
+        ('% PIR medium', percent(df, df.pir_medium)),
+        ('% PIR high', percent(df, df.pir_high)),
+        ('% smoker', percent(df, df.smoker)),
     ])
 
 
